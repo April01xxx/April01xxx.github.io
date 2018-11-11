@@ -11,6 +11,7 @@ tags: [redis, C]
 Redis中dict这种数据结构进行初步的介绍,关于具体实现机理留待下篇细说.
 
 # dictEntry结构
+---
 ```c
 typedef struct dictEntry {
     void *key;
@@ -24,12 +25,13 @@ typedef struct dictEntry {
 } dictEntry;
 ```
 dictEntry结构是哈希表中存储KV对的基本单元.`key`代表键,`v`是一个联合(union),代表值.
-`next`是指向下一个dictEntry的指针,其目的是为了解决[哈希冲突][1],hash冲突的解决方法
+`next`是指向下一个dictEntry的指针,其目的是为了解决[哈希冲突][collision],hash冲突的解决方法
 有很多,这里选择的是链地址法(separate chaining).
 
-[1]: https://en.wikipedia.org/wiki/Hash_table#Collision_resolution
+[collision]: https://en.wikipedia.org/wiki/Hash_table#Collision_resolution
 
 # dictht结构(哈希表)
+---
 ```c
 typedef struct dictht {
     dictEntry **table;
@@ -43,6 +45,7 @@ typedef struct dictht {
 表示哈希表中已有的元素个数.
 
 # dict结构(字典)
+---
 ```c
 typedef struct dictType {
     uint64_t (*hashFunction)(const void *key);  // 根据key计算hash值.
@@ -68,7 +71,7 @@ typedef struct dict {
 复制/销毁函数,键的比较函数.
 + <strong>privdata</strong>: 保存了需要传给dictType中特定函数的可选参数.
 + <strong>ht[2]</strong>: 两张哈希表.为什么是两张,存储数据的话一张就够了啊?这涉及到
-一个概念:[负载因子(load factor)][2].我们知道哈希表根据key访问元素的时间复杂度是O(1),
+一个概念:[负载因子(load factor)][load factor].我们知道哈希表根据key访问元素的时间复杂度是O(1),
 但当哈希表中元素的数量非常多时,哈希冲突的可能性会越来越高,这会使得访问效率下降,为了
 解决这个问题,当负载因子达到一定值时需要重建哈希表(rehash).在Redis中,rehash是渐进式的,
 并非一次性将所有键值对从ht[0]中rehash到ht[1],而是一次处理一部分,有个中间过程,倘若在
@@ -78,9 +81,10 @@ typedef struct dict {
 + <strong>iterators</strong>: 当前正在运行的迭代器数量.为了遍历字典而创建迭代器,这个
 值表明当前有多少个迭代器在运行.
 
-[2]: https://en.wikipedia.org/wiki/Hash_table#Key_statistics
+[load factor]: https://en.wikipedia.org/wiki/Hash_table#Key_statistics
 
 # 渐进式rehash
+---
 下面简要的描述下rehash的算法,具体的细节留待后面的篇章中描述.
 1. 为ht[1]分配空间,针对哈希表的扩展(负载因子过大)或者收缩(负载因子过小)两种情况,
 分配空间的策略有所不同:
