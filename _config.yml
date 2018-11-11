@@ -12,11 +12,6 @@ avatar_url: /static/img/avatar.jpg
 enableTags: true
 tagarray: []
 
-collections:
-  project:
-    output: true
-    permalink: /project/:path/
-
 social:
     - icon: fa-facebook
       link: "#"
