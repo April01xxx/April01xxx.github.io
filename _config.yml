@@ -2,7 +2,9 @@ title: Stack Problems
 description: 朝花夕拾
 author: April01xxx
 github: https://github.com/April01xxx
-about: 你瞧这些白云聚了又散，散了又聚，人生离合，亦复如斯。--金庸 <<神雕侠侣>>
+about: 你瞧这些白云聚了又散，散了又聚，
+人生离合，亦复如斯。
+--金庸 <<神雕侠侣>>
 disqus_shortname: stackproblems
 google_analytics: UA-XXXXXXXX-Y
 avatar_url: /static/img/avatar.jpg
@@ -30,8 +32,6 @@ social:
 urls:
     - text: About Me
       url: /about/
-    - text: My Projects
-      url: /projects/
     - text: XML Feed
       url: /feed.xml
 
