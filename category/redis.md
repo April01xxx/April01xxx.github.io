@@ -1,6 +1,6 @@
 ---
 layout: posts_by_category
 categories: redis
-title: redis
+title: Redis
 permalink: /category/redis
 ---
