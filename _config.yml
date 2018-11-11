@@ -1,8 +1,8 @@
 title: Stack Problems
-description: My Personal Stack Problems
-author: Agus Makmun
-github: https://github.com/agusmakmun
-about: I am freelance developer. Currently doing more in backend, focused in Python and Django.
+description: 朝花夕拾
+author: April01xxx
+github: https://github.com/April01xxx
+about: 你瞧这些白云聚了又散，散了又聚，人生离合，亦复如斯。--金庸 <<神雕侠侣>>
 disqus_shortname: stackproblems
 google_analytics: UA-XXXXXXXX-Y
 avatar_url: /static/img/avatar.jpg
@@ -19,17 +19,13 @@ social:
     - icon: fa-facebook
       link: "#"
     - icon: fa-twitter
-      link: "https://twitter.com/agusmakmun6"
+      link: "#"
     - icon: fa-linkedin
-      link: "https://www.linkedin.com/in/summonagus"
+      link: "#"
     - icon: fa-stack-exchange
       link: "#"
     - icon: fa-github
-      link: "https://github.com/agusmakmun"
-
-share:
-  twitter_username: agusmakmun6
-  fb_appid: 1749788565247320
+      link: "https://github.com/April01xxx"
 
 urls:
     - text: About Me
@@ -39,7 +35,7 @@ urls:
     - text: XML Feed
       url: /feed.xml
 
-url: "https://agusmakmun.github.io"
+url: "https://April01xxx.github.io"
 baseurl: ""
 paginate: 20
 per_page: 20
