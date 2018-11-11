@@ -6,4 +6,4 @@ permalink: /about/
 
 恍惚而立之年
 
-email: lancer_cool[at]163.com
+email: lancer_cool@163.com
