@@ -93,9 +93,9 @@ typedef struct dict {
 2. 将`rehashidx`的值置为0,表示rehash开始;
 3. 在rehash期间,对字典进行删/改/查操作时,程序除了执行指定操作外,还会将对应的key
 在ht[0]中的记录rehash到ht[1]中,同时删除ht[0]中的记录,若是新增操作,则直接插入ht[1]中.
-每次rehash完成,rehashidx的值加1.
+每次rehash完成,`rehashidx`的值加1.
 4. 当ht[0]中没有元素时,rehash完成,将ht[0]的空间释放,ht[1]置为ht[0],ht[1]指向空哈希表,
-rehashidx的值置为-1.
+`rehashidx`的值置为-1.
 
 上述算法避免了集中式rehash可能造成的性能影响,但会占用额外的空间,而且在rehash的过程中,
 删/改/查操作可能要查询ht[0]和ht[1]两张哈希表.此时遍历哈希表也会变得复杂.
