@@ -7,8 +7,8 @@ tags: [algorithm]
 ---
 
 [二分查找(binary search)][binary search]可以说是一种非常简单却又实用的算法,因为简
-单,所以一直没对它有什么系统性的总结,每次遇到需要使用该算法解决的问题,对于[边界情况][
-boundary case]每次都要花点时间思考,恰好这次在LeetCode刷题,又遇到了一点问题,索性把
+单,所以一直没对它有什么系统性的总结,每次遇到需要使用该算法解决的问题,对于
+[边界情况][boundary case]每次都要花点时间思考,恰好这次在LeetCode刷题,又遇到了一点问题,索性把
 自己的一些经验记录下来.
 
 [binary search]: https://en.wikipedia.org/wiki/Binary_search_algorithm
@@ -19,17 +19,17 @@ boundary case]每次都要花点时间思考,恰好这次在LeetCode刷题,又�
 在LeetCode上刷题也有几个月了,刷了200多道,也不知道算快还是慢(ps:应该算慢吧...).早上
 遇到一题如下:
 > You are a product manager and currently leading a team to develop a new product.
-Unfortunately, the latest version of your product fails the quality check. Since
-each version is developed based on the previous version, all the versions after
-a bad version are also bad.
-
+> Unfortunately, the latest version of your product fails the quality check. Since
+> each version is developed based on the previous version, all the versions after
+> a bad version are also bad.
+>
 > Suppose you have n versions [1, 2, ..., n] and you want to find out the first
-bad one, which causes all the following ones to be bad.
-
+> bad one, which causes all the following ones to be bad.
+>
 > You are given an API bool isBadVersion(version) which will return whether version
-is bad. Implement a function to find the first bad version. You should minimize
-the number of calls to the API.
-
+> is bad. Implement a function to find the first bad version. You should minimize
+> the number of calls to the API.
+>
 
 大意是说有n个连续的数字,每个数字表示一个版本号,从某个数字开始后面的版本号都是错的,
 有一个API函数`isBadVersion(version)`可以判断一个版本号是否错误.要求用最少的次数找到
@@ -87,8 +87,10 @@ public:
 的含义.若`lo < hi`那么一定有`lo <= mid < hi`;也就是说`mid`的取值取不到`hi`.如果
 `lo <= hi`,那么`mid`是可以取值到`hi`的.根据第一点中`hi`的初值,此处决定如何限定循环
 条件.
-3. **lo = mid 还是 hi = mid:** 若`mid`的值不满足条件,假设此时应该向左搜索,那么`hi = mid`.
-若向右搜索,那么`lo = mid + 1`.
+3. **lo = mid 还是 hi = mid:** 若`mid`的值不满足条件,假设此时应该向左搜索,如果你的循环
+条件是`lo < hi`那说明`mid`要能取到所有小于`hi`的值,故`hi = mid`,若循环条件是`lo <= hi`,
+那说明`mid`能取到`hi`,此时`hi = mid - 1`,因为`mid`处的值肯定不满足条件,故`hi`取mid前一
+位.`lo`的赋值同理.
 4. **循环结束后的返回值:** 应该返回`lo`还是`hi`是依据前面三点得到的.严格来说,从第一点
 确认后,后面的也跟着确定了.
 
