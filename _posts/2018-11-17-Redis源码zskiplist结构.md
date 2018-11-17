@@ -126,7 +126,7 @@ int zslRandomLevel(void) {
 落在这个区间的概率是p,因为`random()的输出是均匀分布的`,所以`p=ZSKIPLIST_P`.`第二次`还落
 在这个区间的概率就是`p*p`,依此类推,`第k次`还落在这个区间的概率就是`p^k`.这就是所谓的`幂
 法则`.
-3. 通过数学推导可以得出每个节点评价拥有的指针数量是`1/(1-P)`,跳跃表的查找,插入和删除操作
+3. 通过数学推导可以得出每个节点平均拥有的指针数量是`1/(1-P)`,跳跃表的查找,插入和删除操作
 的时间复杂度都是`O(logN)`.
 
 [pdf]: https://www.epaperpress.com/sortsearch/download/skiplist.pdf
