@@ -81,6 +81,6 @@ bool search(list *head, int target)
     + 重复以上步骤,直至链表中只有两个节点;
 
 示意图如下:
-![skiplist1]({{ site.url }}/static/img/_posts/skiplist1.jpg)
+![skiplist1](https://github.com/April01xxx/April01xxx.github.io/raw/master/static/img/_posts/skiplist1.jpg)
 
 经过以上步骤,我们得到了一个分层的链表
