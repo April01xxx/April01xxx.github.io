@@ -4,7 +4,6 @@ title: "Redis源码zskiplist结构"
 date: 2018-11-17 10:04
 categories: [redis]
 tags: [redis, C]
-image: skiplist1.jpg
 ---
 
 这篇主要是来说一下Redis中的[跳跃表][skip list]结构,印象中在数据结构相关的教材中跳跃表
@@ -83,4 +82,95 @@ bool search(list *head, int target)
 示意图如下:
 ![skiplist1](https://github.com/April01xxx/April01xxx.github.io/raw/master/static/img/_posts/skiplist1.jpg)
 
-经过以上步骤,我们得到了一个分层的链表
+经过以上步骤,我们得到了一个分层的链表,如果要在这个链表中查找元素`80`是否存在,从链表`L2`中知道
+元素`70`所在的位置,于是前面的节点都可以忽略,从`70`后面开始查找,而`70`的后面是`NULL`节点,故接下
+来在链表`L1`中查找,发现后面还是`NULL`,只能再向下到链表`L0`中查找,结果发现后面是`90`,故元素`80`
+不在链表中.
+
+至此通过在链表中添加附加信息形成多层链表有效的提高了查找的效率,但还有些问题上面没有提及.我们在
+设置附加信息时是采取了`等间距抽样`的方式,只有每段的元素个数均匀的情况下,查找的效率才会有效提升.
+这也是为什么快速排序算法中非常注重枢纽元选取的原因:选取合适的枢纽元,分割后的区间中元素个数尽可能
+的均匀,快排的效率才能达到O(logN).对于跳跃表而言,如果只是查询,没有插入或者删除操作,这样等间距设置的
+方法没问题,但若要往链表中插入元素,又或者删除元素,为了保持元素的均匀分布,在插入或者删除后需要调整
+我们设置的`"指示牌"`位置,这是一种级联操作,会影响到整个链表,虽然查询的效率提高了,但插入和删除的效率
+却还是O(N).那怎么解决这个问题呢?让我们来看看Redis中是如何处理的.
+
+# 随机化 && 幂法则(Power Law)
+---
+Redis中跳跃表基本是依据William Pugh发表的关于跳跃表的论文实现的:[Skip Lists: A Probabilistic Alternative to Balanced Trees][pdf],
+链表中的一个节点能否被提升到上层链表中是由概率决定的:随机化.在提升节点的过程中,又必须依据
+[幂法则][power law],通俗点来讲就是`节点本身的层数越高,被提升的概率就越低`.这个逻辑是由`zslRandomLevel`
+函数实现的,源码在`t_zset.c`中:
+```c
+#define ZSKIPLIST_MAXLEVEL 32 /* Should be enough for 2^32 elements */
+#define ZSKIPLIST_P 0.25      /* Skiplist P = 1/4 */
+
+/* Returns a random level for the new skiplist node we are going to create.
+ * The return value of this function is between 1 and ZSKIPLIST_MAXLEVEL
+ * (both inclusive), with a powerlaw-alike distribution where higher
+ * levels are less likely to be returned. */
+int zslRandomLevel(void) {
+    int level = 1;
+    while ((random()&0xFFFF) < (ZSKIPLIST_P * 0xFFFF))
+        level += 1;
+    return (level<ZSKIPLIST_MAXLEVEL) ? level : ZSKIPLIST_MAXLEVEL;
+}
+```
+有几点要注意:
+1. 每个节点的层数有个上限:`ZSKIPLIST_MAXLEVEL`,在我阅读的redis 4.0版本源码中,取值为`32`,
+最新的版本里面这个值改为`64`了.每个节点被提升的概率是由`ZSKIPLIST_P`决定的,取值为`0.25`.
+这两个宏定义均在`server.h`文件中.
+2. 通过`random()`函数来随机选择被提升的节点.这里有一点很关键,`random()`函数的结果是`均匀
+分布`的,那么`random() & 0xFFFF`得到的就是一系列均匀落在`[0, 0xFFFF]`区间的数.所以`while`
+循环的逻辑就是判断随机产生的这个数是否落在`[0, ZSKIPLIST_P * 0xFFFF]`区间中.假设`第一次`
+落在这个区间的概率是p,因为`random()的输出是均匀分布的`,所以`p=ZSKIPLIST_P`.`第二次`还落
+在这个区间的概率就是`p*p`,依此类推,`第k次`还落在这个区间的概率就是`p^k`.这就是所谓的`幂
+法则`.
+3. 通过数学推导可以得出每个节点评价拥有的指针数量是`1/(1-P)`,跳跃表的查找,插入和删除操作
+的时间复杂度都是`O(logN)`.
+
+[pdf]: https://www.epaperpress.com/sortsearch/download/skiplist.pdf
+[power law]: https://en.wikipedia.org/wiki/Power_law
+
+# skip list结构
+---
+最后来看看Redis内部是如何实现跳跃表的.主要涉及两个结构体:`zskiplistNode`和`zskiplist`.
+相关定义都在`server.h`文件中.
+```c
+typedef struct zskiplistNode {
+    sds ele;
+    double score;
+    struct zskiplistNode *backward;
+    struct zskiplistLevel {
+        struct zskiplistNode *forward;
+        unsigned long span;
+    } level[];
+} zskiplistNode;
+
+typedef struct zskiplist {
+    struct zskiplistNode *header, *tail;
+    unsigned long length;
+    int level;
+} zskiplist;
+```
+先来看看`zskiplistNode`中各成员的含义:
++ **ele:** 一个SDS结构,在前面的文章中已经提过,简单来说就是用来存放用户输入的信息.
++ **score:** 分值,每个`ele`都有一个分值,由于跳跃表是有序的,在元素插入时会优先
+根据`score`分值进行排序,若分值相同,则根据`ele`排序.
++ **backward:** 后向指针,指向当前节点的前面(prev)一个节点,这就形成了一个双向链表.
++ **level[]:** 这是一个柔性数组,在讲SDS结构时已经提过.用来记录当前节点有多少层,
+每层的下一个节点是谁(`forward`指针指向的节点),距离下一个节点的`距离(span)`是多少.
+`span`的准确含义是当前节点和forward指向的节点中间跨越的节点个数.之所以引入`span`
+记录距离信息,是为了方便计算每个节点在整个链表中的排名.比如我想要找出链表中排名第
+10的元素,这时`span`就派上用场了.
+
+`zskiplist`的结构就简单很多:
++ **header:** 整个跳跃表的头结点,需要注意的是这是一个`哑结点(dummy node)`,创建时`level`
+有`ZSKIPLIST_MAXLEVEL`层,不存储实际的用户数据(ele和score).
++ **tail:** 跳跃表的尾节点,指向实际的链表节点,若链表为空则指向`NULL`.
++ **length:** 整个链表的长度.
++ **level:** 链表中层数大的节点的层数,不包括`header`节点.
+
+通过这两个结构,最终形成了如下所示的跳跃表:[图没画好,画好后补充]
+
+关于跳跃表的插入和删除,留待下篇文章细说.
