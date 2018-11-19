@@ -119,6 +119,7 @@ static void _intsetSet(intset *is, int pos, int64_t value) {
 1. `(int64_t *)is->contents`:这是一个强制类型转换,将`int8_t *`转换为`int64_t *`.
 2. `ptr[pos]`的含义等同于`ptr+pos`,实际位移的字节数和指针`ptr`所指向的类型有关.这里
 `ptr`是指向`占用8字节`的整型数组的指针,故实际位移字节数是`pos*8`.
+
 理解了这两点,这段代码的逻辑自然就清楚了.
 
 
