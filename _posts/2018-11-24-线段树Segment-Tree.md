@@ -2,7 +2,7 @@
 layout: post
 title: "线段树Segment Tree"
 date: 2018-11-24 14:02
-categories: [Algorithm]
+categories: [algorithm]
 tags: [algorithm]
 ---
 
@@ -14,10 +14,12 @@ LeetCode上刷题也有好几个月了,自我感觉对于一些常用的数据�
 > The update(i, val) function modifies nums by updating the element at index i to val.
 >
 > Example:
+>
 > Given nums = [1, 3, 5]
 > sumRange(0, 2) -> 9
 > update(1, 2)
 > sumRange(0, 2) -> 8
+>
 > Note:
 > + The array is only modifiable by the update function.
 > + You may assume the number of calls to update and sumRange function is distributed evenly.
@@ -124,7 +126,7 @@ struct segmentTreeNode {
 ```
 所谓数据结构和算法,接下来自然是基于给定的数据结构寻找合适的算法来满足题目的要求.
 
-## segmentTreeCreate创建线段树
+# segmentTreeCreate创建线段树
 ---
 线段树是本质上还是一棵二叉树,所以在创建树的过程中`采用递归的方法自顶向下建树`.
 ```c
@@ -156,7 +158,7 @@ segmentTree segmentTreeCreate(int *array, int lo, int hi) {
 }
 ```
 
-## segmentTreeUpdate线段树更新
+# segmentTreeUpdate线段树更新
 ---
 线段树可以满足多种更新操作,例如整个区间的所有元素累加一个固定值,减去一个固定值等等.
 这里要求的是更新某个指定下标的元素的值,实际就是一个查找操作,需要注意的是叶子节点的
@@ -180,7 +182,7 @@ void segmentTreeUpdate(segmentTree st, int i, int val) {
 }
 ```
 
-## segmentTreeQuery线段树查找
+# segmentTreeQuery线段树查找
 这里的需求是查询某一范围区间内所有元素的和.从根节点开始查找,假定查找的范围区间是
 [i,j],在查找的过程中,会面临以下几种情况:
 1. 该节点所表示的区间恰好就是要查找的区间:`node->lo == i && node->hi == j`.此时直
