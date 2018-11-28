@@ -7,7 +7,10 @@ tags: [redis, C]
 ---
 
 之前大致描述了Redis底层dict结构的定义,也提到了在负载因子过高或者过低时会发生rehash.
-这次就来仔细看看具体是怎么实现的.先附上一张相关数据结构的关系图.[待画好后补充]
+这次就来仔细看看具体是怎么实现的.先附上一张相关数据结构的关系图:
+![dict][dict]
+
+[dict]: https://github.com/April01xxx/April01xxx.github.io/raw/master/static/img/_posts/dict.jpg
 
 # 创建字典dict
 ---
