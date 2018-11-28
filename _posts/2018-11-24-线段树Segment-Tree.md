@@ -114,7 +114,7 @@ void numArrayFree(NumArray* obj) {
 以数组`[9,0,7,5,3]`为例形成的`segment tree`示意图如下:
 ![segment tree][segment tree]
 
-[segment tree]: https://github.com/April01xxx/April01xxx.github.io/blob/master/static/img/_posts/segment_tree.jpg
+[segment tree]: https://github.com/April01xxx/April01xxx.github.io/raw/master/static/img/_posts/segment_tree.jpg
 
 # segment tree实现
 ---
