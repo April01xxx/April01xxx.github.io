@@ -111,7 +111,10 @@ void numArrayFree(NumArray* obj) {
 2. **区间元素的和:** 为了快速计算sumRange(i,j),在每个节点中还要保存这段区间内所有元
 素的和.
 
-以数组`[9,0,7,5,3]`为例形成的`segment tree`示意图如下:[图没画好,待画好后补充]
+以数组`[9,0,7,5,3]`为例形成的`segment tree`示意图如下:
+![segment tree][segment tree]
+
+[segment tree]: https://github.com/April01xxx/April01xxx.github.io/blob/master/static/img/_posts/segment_tree.jpg
 
 # segment tree实现
 ---
