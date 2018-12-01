@@ -9,9 +9,10 @@ tags: [redis, C]
 关于Redis的底层数据结构基本都过了一遍,小有所得.基于这些基础的数据结构,redis封装了
 自己的对象类型.很早有个想法是看看每个类型是如何创建,如何存储,如何消亡的.最开始打算
 用gdb跟踪调试,结果发现不得其门而入.原因在于缺少对redis服务器结构体系的宏观认识.于是
-打算研究下服务器的各个模块.这一篇主要介绍redis中的文件事件.redis的文件事件处理器
-(`file event handler`)是基于了[reactor design pattern][reactor]实现的,相关信息可以
-参考给出的Wikipedia链接说明,我基于自身的理解也对此做了一个总结:
+打算研究下服务器的各个模块.这一篇主要介绍redis中的文件事件.
+
+redis的文件事件处理器(`file event handler`)是基于[reactor design pattern][reactor]
+实现的,相关信息可以参考给出的Wikipedia链接说明,我基于自身的理解也对此做了一个总结:
 ![reactor pattern][reactor pattern]
 
 [reactor]: https://en.wikipedia.org/wiki/Reactor_pattern
@@ -65,8 +66,7 @@ typedef struct aeEventLoop {
 + **setsize:** 最大需要处理的文件描述符数量.
 + **events:** 已经注册的事件.
 + **apidata:** 与API相关的特有数据.这是因为对于不同的平台,redis会选择当前性能
-最高的`demultiplexer`解复用器处理请求,而它们所需的数据结构是不一样的.接下来会
-以`select`实现的解复用器为例进行说明.
+最高的`demultiplexer`解复用器处理请求,而它们所需的数据结构是不一样的.
 
 在redis服务器启动时会创建一个事件状态机,相关源码在`ae.c`中:
 ```c
@@ -104,7 +104,7 @@ err:
 ```
 `aeApiCreate`函数封装了底层采用的解复用器实现细节,这里以`select`函数实现为例,看看
 它到底封装了哪些数据:
-```
+```c
 typedef struct aeApiState {
     fd_set rfds, wfds;
     /* We need to have a copy of the fd sets as it's not safe to reuse
