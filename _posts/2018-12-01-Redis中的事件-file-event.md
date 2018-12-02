@@ -65,6 +65,7 @@ typedef struct aeEventLoop {
 + **maxfd:** 当前已经注册了的最大文件描述符.
 + **setsize:** 最大需要处理的文件描述符数量.
 + **events:** 已经注册的事件.
++ **fired:** 已经就绪(可读/写)的事件.
 + **apidata:** 与API相关的特有数据.这是因为对于不同的平台,redis会选择当前性能
 最高的`demultiplexer`解复用器处理请求,而它们所需的数据结构是不一样的.
 
