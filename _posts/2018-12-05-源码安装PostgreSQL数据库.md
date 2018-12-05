@@ -60,6 +60,7 @@ readline.x86_64 : A library for editing typed command lines
 > visudo edits the sudoers file in a safe fashion, analogous to vipw(8).  visudo locks the sudoers file against multiple 
 > simultaneous >edits, provides basic sanity checks, and checks for parse errors. If the sudoers file is currently being 
 > edited you will receive a message to try again later.
+>
 > visudo parses the sudoers file after editing and will not save the changes if there is a syntax error.  Upon finding an 
 > error, visudo will print a message stating the line number(s) where the error occurred and the user will receive the 
 > “What now?” prompt. At this point the user may enter ‘e’ to re-edit the sudoers file, ‘x’ >to exit without saving the 
