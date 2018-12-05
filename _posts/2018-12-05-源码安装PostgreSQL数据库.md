@@ -57,11 +57,15 @@ readline.x86_64 : A library for editing typed command lines
 ```
 发现即使是root用户也只有`r`读的权限,比较暴力的做法是修改文件权限然后添加用户,实际上有一个专门的命令`visudo`可以修改该文件,这里贴一段
 系统对该命令的说明:
->visudo edits the sudoers file in a safe fashion, analogous to vipw(8).  visudo locks the sudoers file against multiple simultaneous >edits, provides basic sanity checks, and checks for parse errors.
->     If the sudoers file is currently being edited you will receive a message to try again later.
->
->     visudo parses the sudoers file after editing and will not save the changes if there is a syntax error.  Upon finding an error, >visudo will print a message stating the line number(s) where the error
->     occurred and the user will receive the “What now?” prompt.  At this point the user may enter ‘e’ to re-edit the sudoers file, ‘x’ >to exit without saving the changes, or ‘Q’ to quit and save changes.
->     The ‘Q’ option should be used with extreme caution because if visudo believes there to be a parse error, so will sudo and no one >will be able to run sudo again until the error is fixed.  If ‘e’ is
->     typed to edit the sudoers file after a parse error has been detected, the cursor will be placed on the line where the error >occurred (if the editor supports this feature).
+> visudo edits the sudoers file in a safe fashion, analogous to vipw(8).  visudo locks the sudoers file against multiple 
+> simultaneous >edits, provides basic sanity checks, and checks for parse errors. If the sudoers file is currently being 
+> edited you will receive a message to try again later.
+> visudo parses the sudoers file after editing and will not save the changes if there is a syntax error.  Upon finding an 
+> error, visudo will print a message stating the line number(s) where the error occurred and the user will receive the 
+> “What now?” prompt. At this point the user may enter ‘e’ to re-edit the sudoers file, ‘x’ >to exit without saving the 
+> changes, or ‘Q’ to quit and save changes. The ‘Q’ option should be used with extreme caution because if visudo believes 
+> there to be a parse error, so will sudo and no one will be able to run sudo again until the error is fixed.  If ‘e’ is
+> typed to edit the sudoers file after a parse error has been detected, the cursor will be placed on the line where the 
+> error occurred (if the editor supports this feature).
+
 简单概括来说就是使用这个命令更安全,而且若文件中存在语法错误也可以检测到并提示.
