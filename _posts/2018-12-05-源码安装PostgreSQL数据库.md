@@ -24,8 +24,7 @@ PG的configure提供了非常丰富的选项,考虑到以后可能会需要`SSL`
 # 找不到头文件
 ---
 还一种错误是找不到头文件,这些找不到的头文件往往都是第三方库的,比如`readline.h`头文件.这个时候先在系统相关的`include`目录下查找是否
-确实没有该文件,如果没有,那就必须安装.
-1. 查找该库的相关信息:`yum search readline`,这时可能会看到如下输出:
+确实没有该文件,如果没有,那就必须安装.查找该库的相关信息:`yum search readline`,这时可能会看到如下输出:
 ```c
 [root@localhost lib64]# yum search readline
 Loaded plugins: fastestmirror, langpacks
