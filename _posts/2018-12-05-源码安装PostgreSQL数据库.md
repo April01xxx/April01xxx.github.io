@@ -25,7 +25,7 @@ PG的configure提供了非常丰富的选项,考虑到以后可能会需要`SSL`
 ---
 还一种错误是找不到头文件,这些找不到的头文件往往都是第三方库的,比如`readline.h`头文件.这个时候先在系统相关的`include`目录下查找是否
 确实没有该文件,如果没有,那就必须安装.查找该库的相关信息:`yum search readline`,这时可能会看到如下输出:
-```c
+```bash
 [root@localhost lib64]# yum search readline
 Loaded plugins: fastestmirror, langpacks
 Loading mirror speeds from cached hostfile
@@ -50,7 +50,7 @@ readline.x86_64 : A library for editing typed command lines
 # 关于权限管理
 ---
 我安装的CentOS 7默认创建的用户是无法使用`sudo`命令的,原因是没有将该用户加入`sudoers`中.相关的配置文件是`/etc/sudoers`,文件权限如下:
-```c
+```bash
 [root@localhost lib64]# ls -l /etc/sudoers
 -r--r-----. 1 root root 4328 Oct 30 22:38 /etc/sudoers
 ```
