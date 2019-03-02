@@ -193,7 +193,7 @@ postgres@postgres=# select copytext('hello world');
 类型，也可以是表的某条记录。对于C语言来说，返回一条记录可以当做是返回一个结构体，或者称为
 `组合类型(Composite Types)`,PG为了简化组合类型返回值的处理定义了一系列API，其接口包含在
 头文件`funcapi.h`中。为了返回一条记录，需要遵循以下约定：
-1. 构造一个结构体`TupleDesc`，用来描述要返回的`记录`(例如各个字段的类型)；
+1. 构造一个结构体`TupleDesc`，用来描述要返回的`记录`的相关信息(例如各个字段的类型)；
 2. 若是从`Datum`构建`记录`，需要将`TupleDesc`传递给`BlessTupleDesc`函数，然后调用
 `heap_form_tuple`函数；
 3. 若是从`C string`构建`记录`,需要将`TupleDesc`传递给`TupleDescGetAttInMetadata`
