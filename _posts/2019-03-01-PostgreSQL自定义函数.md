@@ -193,45 +193,43 @@ postgres@postgres=# select copytext('hello world');
 类型，也可以是表的某条记录。对于C语言来说，返回一条记录可以当做是返回一个结构体，或者称为
 `组合类型(Composite Types)`,PG为了简化组合类型返回值的处理定义了一系列API，其接口包含在
 头文件`funcapi.h`中。为了返回一条记录，需要遵循以下约定：
-1. 构造一个结构体`TupleDesc`，用来代表要返回的`记录`；
+1. 构造一个结构体`TupleDesc`，用来描述要返回的`记录`的相关信息(例如各个字段的类型)；
 2. 若是从`Datum`构建`记录`，需要将`TupleDesc`传递给`BlessTupleDesc`函数，然后调用
-`heap_from_tuple`函数；
+`heap_form_tuple`函数；
 3. 若是从`C string`构建`记录`,需要将`TupleDesc`传递给`TupleDescGetAttInMetadata`
 函数，然后调用`BuildTupleFromCStrings`函数；
 
 为了构造`TupleDesc`结构体，PG内核提供了相关辅助函数，这里只是简单列出，具体函数接口和实现
 请自行阅读`funcapi.h`中的注释说明：
-- **get_call_result_type:** 根据函数调用信息计算函数返回的记录的各个字段的类型进而构造
-TupleDesc；
+- **get_call_result_type:** 根据`函数调用信息PG_FUNCTION_ARGS`计算函数返回的记录的各个字段的类
+型进而构造TupleDesc；
 - **RelationNameGetTupleDesc:** 根据关系名字构造TupleDesc；
 - **TypeGetTupleDesc:** 根据类型OID构造TupleDesc；
 
-通过`heap_from_tuple`或者`BuildTupleFromCStrings`函数构造好`记录(HeapTuple)`之后，
-还需要利用`HeapTupleGetDatum`函数将记录转换为`Datum指针`，这样就能作为函数返回值。
+通过`heap_form_tuple`或者`BuildTupleFromCStrings`函数构造好`记录(HeapTuple)`之后，
+还需要利用`HeapTupleGetDatum`函数将记录转换为`Datum指针`作为函数的返回值。
 
-这里仅演示从`C String`构造记录的方法，示例代码如下：
+这里仅演示从`Datum`构造记录的方法，示例代码如下：
 ```c
-#include <string.h>
 #include "postgres.h"
+#include "access/htup_details.h"
 #include "fmgr.h"
 #include "funcapi.h"
-
-#define MAX_WORDS 10
 
 PG_MODULE_MAGIC;
 
 PG_FUNCTION_INFO_V1(return_record);
 
 /*
- * return_record函数接收三个text参数，返回其拷贝。
+ * return_record函数接收三个text参数，返回由这三个参数组成的记录。
  */
 Datum
 return_record(PG_FUNCTION_ARGS)
 {
     TupleDesc tupledesc;
-    HeapTuple tuple;
-    AttInMetadata *attinmeta;
-    char **ret;
+    Tuple tuple;
+    Datum ret[3];
+    bool isnull[3] = {0};
     int i;
 
     /* 根据函数调用信息获取返回记录的各个字段类型。 */
@@ -240,23 +238,13 @@ return_record(PG_FUNCTION_ARGS)
                 (errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
                     errmsg("function returning record cannot accept type record")));
 
-    /* 从C String构造record，调用TupleDescGetAttInMetadata函数进行处理。 */
-    attinmeta = TupleDescGetAttInMetadata(tupledesc);
-
-    ret = (char **) palloc(3 * sizeof(char *));
-    for (i = 0; i < 3; ++i)
-    {
-        char *input = PG_GETARG_CSTRING(i);
-
-        ret[i] = (char *) palloc(strlen(input) + 1);
-        memcpy(ret[i], input, strlen(input) + 1);
-    }
-
-    tuple = BuildTupleFromCStrings(attinmeta, ret);
+    /* 从Datum构造record，调用BlessTupleDesc函数进行处理。 */
+    tupledesc = BlessTupleDesc(tupledesc);
 
     for (i = 0; i < 3; ++i)
-        pfree(ret[i]);
-    pfree(ret);
+        ret[i] = PG_GETARG_DATUM(i);
+
+    tuple = heap_form_tuple(tupledesc, ret, isnull);
 
     return HeapTupleGetDatum(tuple);
 }
@@ -272,3 +260,14 @@ CREATE FUNCTION return_record(IN text, In text, IN text,
 ```
 这里需要注意的是函数定义中表明了返回值类型是三个`text`类型，同时`RETURNS SETOF record`代表
 返回的是记录。
+
+函数创建成功后就可以在SQL语句中使用了：
+```sql
+postgres=# select * from return_record('who', 'am', 'I');
+ c1  | c2 | c3
+-----+----+----
+ who | am | I
+(1 row)
+```
+
+除了支持返回记录外，PG内核也支持返回`集合(多条记录)`，后续有机会再分析。
