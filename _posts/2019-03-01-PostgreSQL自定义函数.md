@@ -189,5 +189,86 @@ postgres@postgres=# select copytext('hello world');
 
 # 更复杂的例子
 ---
-热身完毕，接下来我们实现一个稍微复杂点的例子：定义一个函数get_table_info，输入参数是表名，
-字符串text类型，返回pg_class中该表的描述信息。
+热身完毕，接下来我们实现一个稍微复杂点的例子：定义一个返回`记录`的函数。这里的`记录`可以是自定义
+类型，也可以是表的某条记录。对于C语言来说，返回一条记录可以当做是返回一个结构体，或者称为
+`组合类型(Composite Types)`,PG为了简化组合类型返回值的处理定义了一系列API，其接口包含在
+头文件`funcapi.h`中。为了返回一条记录，需要遵循以下约定：
+1. 构造一个结构体`TupleDesc`，用来代表要返回的`记录`；
+2. 若是从`Datum`构建`记录`，需要将`TupleDesc`传递给`BlessTupleDesc`函数，然后调用
+`heap_from_tuple`函数；
+3. 若是从`C string`构建`记录`,需要将`TupleDesc`传递给`TupleDescGetAttInMetadata`
+函数，然后调用`BuildTupleFromCStrings`函数；
+
+为了构造`TupleDesc`结构体，PG内核提供了相关辅助函数，这里只是简单列出，具体函数接口和实现
+请自行阅读`funcapi.h`中的注释说明：
+- **get_call_result_type:** 根据函数调用信息计算函数返回的记录的各个字段的类型进而构造
+TupleDesc；
+- **RelationNameGetTupleDesc:** 根据关系名字构造TupleDesc；
+- **TypeGetTupleDesc:** 根据类型OID构造TupleDesc；
+
+通过`heap_from_tuple`或者`BuildTupleFromCStrings`函数构造好`记录(HeapTuple)`之后，
+还需要利用`HeapTupleGetDatum`函数将记录转换为`Datum指针`，这样就能作为函数返回值。
+
+这里仅演示从`C String`构造记录的方法，示例代码如下：
+```c
+#include <string.h>
+#include "postgres.h"
+#include "fmgr.h"
+#include "funcapi.h"
+
+#define MAX_WORDS 10
+
+PG_MODULE_MAGIC;
+
+PG_FUNCTION_INFO_V1(get_table_info);
+
+/*
+ * return_record函数接收三个text参数，返回其拷贝。
+ */
+Datum
+return_record(PG_FUNCTION_ARGS)
+{
+    TupleDesc tupledesc;
+    Tuple tuple;
+    AttInMetadata *attinmeta;
+    char **ret;
+    int i;
+
+    /* 根据函数调用信息获取返回记录的各个字段类型。 */
+    if (get_call_result_type(fcinfo, NULL, &tupledesc) != TYPEFUNC_COMPOSITE)
+        ereport(ERROR,
+                (errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
+                    errmsg("function returning record cannot accept type record")));
+
+    /* 从C String构造record，调用TupleDescGetAttInMetadata函数进行处理。 */
+    attinmeta = TupleDescGetAttInMetadata(tupledesc);
+
+    ret = (char **) palloc(3 * sizeof(char *));
+    for (i = 0; i < 3; ++i)
+    {
+        char *input = PG_GETARG_CSTRING(i);
+
+        ret[i] = (char *) palloc(strlen(input) + 1);
+        memcpy(ret[i], input, strlen(input) + 1);
+    }
+
+    tuple = BuildTupleFromCStrings(attinmeta, ret);
+
+    for (i = 0; i < 3; ++i)
+        pfree(ret[i]);
+    pfree(ret);
+
+    return HeapTupleGetDatum(tuple);
+}
+```
+
+编译成动态库`librecord.so`后即可共PG数据库启动时加载，接着定义SQL语句中调用的函数：
+```sql
+CREATE FUNCTION return_record(IN text, In text, IN text,
+                                OUT c1 text, OUT c2 text, OUT c3 text)
+    RETURNS SETOF record
+    AS '$libdir/librecord', 'return_record'
+    LANGUAGE C IMMUTABLE STRICT;
+```
+这里需要注意的是函数定义中表明了返回值类型是三个`text`类型，同时`RETURNS SETOF record`代表
+返回的是记录。
