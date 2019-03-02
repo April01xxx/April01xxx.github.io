@@ -220,7 +220,7 @@ TupleDesc；
 
 PG_MODULE_MAGIC;
 
-PG_FUNCTION_INFO_V1(get_table_info);
+PG_FUNCTION_INFO_V1(return_record);
 
 /*
  * return_record函数接收三个text参数，返回其拷贝。
@@ -229,7 +229,7 @@ Datum
 return_record(PG_FUNCTION_ARGS)
 {
     TupleDesc tupledesc;
-    Tuple tuple;
+    HeapTuple tuple;
     AttInMetadata *attinmeta;
     char **ret;
     int i;
