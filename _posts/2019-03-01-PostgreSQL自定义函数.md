@@ -229,6 +229,7 @@ return_record(PG_FUNCTION_ARGS)
     TupleDesc tupledesc;
     Tuple tuple;
     Datum ret[3];
+    /* 从Datum构造记录，需要指明每个字段是否为NULL。 */
     bool isnull[3] = {0};
     int i;
 
@@ -241,6 +242,7 @@ return_record(PG_FUNCTION_ARGS)
     /* 从Datum构造record，调用BlessTupleDesc函数进行处理。 */
     tupledesc = BlessTupleDesc(tupledesc);
 
+    /* 函数调用信息中传递参数实际上是以Datum形式传递的。 */
     for (i = 0; i < 3; ++i)
         ret[i] = PG_GETARG_DATUM(i);
 
@@ -250,7 +252,7 @@ return_record(PG_FUNCTION_ARGS)
 }
 ```
 
-编译成动态库`librecord.so`后即可共PG数据库启动时加载，接着定义SQL语句中调用的函数：
+编译成动态库`librecord.so`后即可供PG数据库启动时加载，接着定义SQL语句中调用的函数：
 ```sql
 CREATE FUNCTION return_record(IN text, In text, IN text,
                                 OUT c1 text, OUT c2 text, OUT c3 text)
